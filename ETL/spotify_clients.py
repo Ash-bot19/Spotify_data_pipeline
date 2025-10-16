@@ -2,13 +2,19 @@ import os, time
 import requests
 from tenacity import retry, wait_exponential, stop_after_attempt
 
+from .config import require_env
+
 TOKEN_URL = "https://accounts.spotify.com/api/token"
 BASE_URL  = "https://api.spotify.com/v1"
 
 class SpotifyClient:
-    def __init__(self):
-        self.client_id = os.environ["SPOTIFY_CLIENT_ID"]
-        self.client_secret = os.environ["SPOTIFY_CLIENT_SECRET"]
+    def __init__(self, client_id=None, client_secret=None):
+        self.client_id = client_id or os.environ.get("SPOTIFY_CLIENT_ID")
+        self.client_secret = client_secret or os.environ.get("SPOTIFY_CLIENT_SECRET")
+        if not self.client_id:
+            self.client_id = require_env("SPOTIFY_CLIENT_ID")
+        if not self.client_secret:
+            self.client_secret = require_env("SPOTIFY_CLIENT_SECRET")
         self.token = None
         self.token_expiry = 0
 
