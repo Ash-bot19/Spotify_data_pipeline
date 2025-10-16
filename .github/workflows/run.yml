@@ -22,10 +22,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          - name: Install dependencies|
-            pip install -r path/to/your/requirements.txtpip install -r etl/requirements.txt
+          python -m pip install --upgrade pip
+          pip install -r etl/requirements.txt
 
-      # 🧩 Sanity check step (verifies secrets exist)
+      # Sanity check step (verifies secrets exist)
       - name: Sanity check secrets presence
         run: |
           echo "SPOTIFY_CLIENT_ID set?      ${{ secrets.SPOTIFY_CLIENT_ID != '' }}"
