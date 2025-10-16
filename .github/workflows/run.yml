@@ -37,4 +37,4 @@ jobs:
           SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
           SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
           TARGET: postgres
-        run: python ETL/main.py
+        run: PYTHONPATH=$(pwd) python ETL/main.py
