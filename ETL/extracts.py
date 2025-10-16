@@ -1,6 +1,7 @@
 from datetime import date
 from markets import MARKETS
-from spotify_client import SpotifyClient
+from .spotify_clients import SpotifyClient
+
 
 # Spotify typically names playlists like: "Top 50 - India", owner "Spotify"
 # We'll search per market by display name pattern.

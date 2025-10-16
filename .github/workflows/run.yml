@@ -1,29 +1,33 @@
-name: Test Pipeline
+name: Spotify Top Artists ETL
 
 on:
+  schedule:
+    - cron: "0 6 * * *"    # runs daily at 6:00 UTC
+  workflow_dispatch:       # allows manual trigger
   push:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches: [ main ]     # runs on push too
 
 jobs:
-  run-etl:
+  etl:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
-          cache-dependency-path: ETL/requirements.txt
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r ETL/requirements.txt
+          pip install -r ETL/requirements.txt
 
       - name: Run ETL
+        env:
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+          TARGET: postgres
         run: python ETL/main.py
