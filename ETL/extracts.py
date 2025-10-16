@@ -13,7 +13,7 @@ def find_top50_playlist_for_market(sp, market_code):
     items = data.get("playlists", {}).get("items", [])
     # prefer owner "Spotify" and 50 tracks
     for p in items:
-        if not p:
+        if not isinstance(p, dict):
             continue
         owner = (p.get("owner") or {}).get("display_name","").lower()
         name  = p.get("name","")
@@ -22,7 +22,7 @@ def find_top50_playlist_for_market(sp, market_code):
     # fallback: generic "Top 50 - <Country Name>" via broader search
     data2 = sp.get("/search", params={"q": "top 50", "type": "playlist", "limit": 20})
     for p in data2.get("playlists", {}).get("items", []):
-        if not p:
+        if not isinstance(p, dict):
             continue
         owner = (p.get("owner") or {}).get("display_name","").lower()
         if "spotify" in owner and market_code.lower() in (p.get("name","").lower()):
