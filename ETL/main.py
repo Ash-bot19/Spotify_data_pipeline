@@ -1,8 +1,8 @@
 import os
 import pandas as pd
-from ETL.spotify_clients import SpotifyClient
-from ETL.extracts import extract_daily_snapshots
-from ETL.transform import to_artist_rankings
+from .spotify_client import SpotifyClient
+from .extracts import extract_daily_snapshots
+from .transform import to_artist_rankings
 
 def main():
     sp = SpotifyClient()
