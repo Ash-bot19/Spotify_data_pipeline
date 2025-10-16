@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r etl/requirements.txt
+          pip install -r ETL/requirements.txt
 
       # Sanity check step (verifies secrets exist)
       - name: Sanity check secrets presence
@@ -38,4 +38,4 @@ jobs:
           SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
           SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
           TARGET: postgres
-        run: python etl/main.py
+        run: python ETL/main.py
