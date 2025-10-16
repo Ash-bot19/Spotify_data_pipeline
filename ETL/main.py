@@ -1,4 +1,13 @@
 import os
+import sys
+
+# Ensure package imports work when the script is executed as `python ETL/main.py`
+if __package__ in (None, ""):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    if parent_dir not in sys.path:
+        sys.path.insert(0, parent_dir)
+
 import pandas as pd
 from ETL.spotify_clients import SpotifyClient
 from ETL.extracts import extract_daily_snapshots
