@@ -1,5 +1,5 @@
 from datetime import date
-from markets import MARKETS
+from .markets import MARKETS
 from .spotify_clients import SpotifyClient
 
 

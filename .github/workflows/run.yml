@@ -24,6 +24,13 @@ jobs:
         run: |
           pip install -r ETL/requirements.txt
 
+      # 🧩 Sanity check step (verifies secrets exist)
+      - name: Sanity check secrets presence
+        run: |
+          echo "SPOTIFY_CLIENT_ID set?      ${{ secrets.SPOTIFY_CLIENT_ID != '' }}"
+          echo "SPOTIFY_CLIENT_SECRET set?  ${{ secrets.SPOTIFY_CLIENT_SECRET != '' }}"
+          echo "SUPABASE_DATABASE_URL set?  ${{ secrets.SUPABASE_DATABASE_URL != '' }}"
+
       - name: Run ETL
         env:
           SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
