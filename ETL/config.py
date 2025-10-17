@@ -85,11 +85,30 @@ def _parse_playlists(raw_value: Optional[str]) -> Tuple[PlaylistTarget, ...]:
             raise RuntimeError(
                 "Invalid SPOTIFY_PLAYLIST_IDS entry. Use MARKET:PLAYLIST_ID format."
             )
-        targets.append(PlaylistTarget(market=market.lower(), playlist_id=playlist_id))
+        targets.append(
+            PlaylistTarget(
+                market=market.lower(), playlist_id=_normalise_playlist_id(playlist_id)
+            )
+        )
 
     if not targets:
         raise RuntimeError("SPOTIFY_PLAYLIST_IDS did not contain any playlist entries.")
     return tuple(targets)
+
+
+def _normalise_playlist_id(value: str) -> str:
+    """Extract the raw playlist ID from various formats (URL, URI, plain)."""
+    if value.startswith("spotify:"):
+        parts = value.split(":")
+        return parts[-1]
+
+    if "open.spotify.com" in value:
+        # Handle URLs like https://open.spotify.com/playlist/{id}?si=...
+        segment = value.split("open.spotify.com/playlist/", 1)[-1]
+        segment = segment.split("?", 1)[0]
+        return segment.strip("/")
+
+    return value
 
 
 def load_settings() -> Settings:

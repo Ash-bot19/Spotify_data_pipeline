@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from typing import Dict, List
 
 import pandas as pd
+from requests import HTTPError
 
 from .config import load_settings
 from .db import load_dataframes
@@ -40,7 +41,14 @@ def run() -> Dict[str, object]:
     bronze_frames: List[pd.DataFrame] = []
 
     for target in playlist_targets:
-        playlist = client.fetch_playlist(target.playlist_id)
+        try:
+            playlist = client.fetch_playlist(target.playlist_id)
+        except HTTPError as exc:
+            raise RuntimeError(
+                f"Failed to fetch playlist '{target.playlist_id}' "
+                f"for market '{target.market}'. "
+                "Verify the playlist ID/URL is public and correct."
+            ) from exc
         playlist_name = playlist.get("name") or target.playlist_id
         items = playlist.get("tracks", {}).get("items", [])
         LOGGER.info(
