@@ -70,6 +70,8 @@ class Settings:
     database_url: Optional[str]
     files_output_dir: Path
     playlists: Tuple[PlaylistTarget, ...]
+    artists: Tuple[str, ...]
+    default_market: str
 
     @property
     def outputs_dir(self) -> Path:
@@ -86,13 +88,7 @@ class Settings:
 def _parse_playlists(raw_value: Optional[str]) -> Tuple[PlaylistTarget, ...]:
     """Parse playlist configuration from an environment variable."""
     if not raw_value:
-        return (
-            PlaylistTarget(
-                market="in",
-                playlist_id="37i9dQZEVXbLZ52XmnySJg",
-                api_market_override="IN",
-            ),
-        )
+        return tuple()
 
     targets: List[PlaylistTarget] = []
     parts = [part.strip() for part in raw_value.split(",") if part.strip()]
@@ -118,6 +114,20 @@ def _parse_playlists(raw_value: Optional[str]) -> Tuple[PlaylistTarget, ...]:
     if not targets:
         raise RuntimeError("SPOTIFY_PLAYLIST_IDS did not contain any playlist entries.")
     return tuple(targets)
+
+
+def _parse_artists(raw_value: Optional[str]) -> Tuple[str, ...]:
+    """Parse a comma-separated list of artist names."""
+    if not raw_value:
+        return (
+            "Arijit Singh",
+            "Shreya Ghoshal",
+            "Armaan Malik",
+            "Badshah",
+            "Neha Kakkar",
+        )
+    names = [name.strip() for name in raw_value.split(",") if name.strip()]
+    return tuple(names)
 
 
 def _split_playlist_entry(entry: str) -> Tuple[str, Optional[str]]:
@@ -173,6 +183,8 @@ def load_settings() -> Settings:
     database_url = os.getenv("SUPABASE_DATABASE_URL")
     files_output = os.getenv("FILES_OUTPUT_DIR") or str(Path("ETL") / "outputs")
     playlists = _parse_playlists(os.getenv("SPOTIFY_PLAYLIST_IDS"))
+    artists = _parse_artists(os.getenv("SPOTIFY_ARTISTS"))
+    default_market = (os.getenv("SPOTIFY_MARKET") or "IN").strip().upper()
 
     return Settings(
         spotify_client_id=client_id,
@@ -181,6 +193,8 @@ def load_settings() -> Settings:
         database_url=database_url,
         files_output_dir=Path(files_output),
         playlists=playlists,
+        artists=artists,
+        default_market=default_market,
     )
 
 

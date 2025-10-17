@@ -65,6 +65,41 @@ class SpotifyClient:
         )
         return playlist
 
+    def search_artist(self, artist_name: str) -> Optional[Dict[str, Any]]:
+        """Return the first artist that matches the search query."""
+        params = {"q": artist_name, "type": "artist", "limit": 1}
+        response = self._request("GET", f"{API_BASE_URL}/search", params=params)
+        items = response.get("artists", {}).get("items", [])
+        if not items:
+            LOGGER.warning("No artist found for query '%s'", artist_name)
+            return None
+        artist = items[0]
+        LOGGER.info(
+            "Resolved artist '%s' to '%s' (%s)",
+            artist_name,
+            artist.get("name"),
+            artist.get("id"),
+        )
+        return artist
+
+    def fetch_artist_top_tracks(
+        self, artist_id: str, *, market: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Return the top tracks for an artist in the specified market."""
+        market_code = market or "US"
+        params = {"market": market_code}
+        response = self._request(
+            "GET", f"{API_BASE_URL}/artists/{artist_id}/top-tracks", params=params
+        )
+        tracks = response.get("tracks", []) or []
+        LOGGER.info(
+            "Fetched %s top tracks for artist %s in market %s",
+            len(tracks),
+            artist_id,
+            market_code,
+        )
+        return tracks
+
     # Internal helpers -----------------------------------------------------
 
     def _request(

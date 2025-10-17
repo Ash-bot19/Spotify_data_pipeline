@@ -13,15 +13,18 @@ Free daily Spotify Top Artists data pipeline (ETL + dashboard)
    SPOTIFY_CLIENT_SECRET=your_spotify_app_client_secret
    # optional overrides:
    # SPOTIFY_PLAYLIST_IDS=us:37i9dQZEVXbLRQDuF5jeBp,gb:https://open.spotify.com/playlist/37i9dQZEVXbLnolsZ8PSNw@GB
-   # (defaults to in:37i9dQZEVXbLZ52XmnySJg if unset)
+   # SPOTIFY_MARKET=IN
+   # SPOTIFY_ARTISTS=Arijit Singh,Shreya Ghoshal
    # SUPABASE_DATABASE_URL=postgres_connection_string
    # FILES_OUTPUT_DIR=absolute_or_relative_path_for_parquet_outputs
    ```
    Environment variables set in the shell take precedence; the `.env` is a convenience for local runs.
    Each playlist entry follows `market:playlist_id` and can optionally include `@api_market`
    (e.g. `gb:playlist@US`) when the Spotify API needs a different market code than the label
-   you want stored in the tables. URLs and `spotify:playlist:` URIs are accepted. If the variable
-   is omitted entirely the pipeline targets the Spotify US Top 50 playlist.
+   you want stored in the tables. URLs and `spotify:playlist:` URIs are accepted. If `SPOTIFY_PLAYLIST_IDS`
+   is omitted we skip playlist ingestion and rely on the artists provided (defaulting to a few popular
+   Indian artists) to pull `/artists/{id}/top-tracks?country=SPOTIFY_MARKET`. This fallback route uses
+   the same market code specified via `SPOTIFY_MARKET` (default `IN`).
 
 ## Running the ETL
 
