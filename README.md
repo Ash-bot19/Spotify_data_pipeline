@@ -12,6 +12,8 @@ Free daily Spotify Top Artists data pipeline (ETL + dashboard)
    SPOTIFY_CLIENT_ID=your_spotify_app_client_id
    SPOTIFY_CLIENT_SECRET=your_spotify_app_client_secret
    # optional overrides:
+   # SPOTIFY_PLAYLIST_IDS=us:37i9dQZEVXbLRQDuF5jeBp,gb:37i9dQZEVXbLnolsZ8PSNw
+   # (defaults to global:37i9dQZEVXbMDoHDwVN2tF if unset)
    # SUPABASE_DATABASE_URL=postgres_connection_string
    # FILES_OUTPUT_DIR=absolute_or_relative_path_for_parquet_outputs
    ```
@@ -23,4 +25,4 @@ Free daily Spotify Top Artists data pipeline (ETL + dashboard)
 python -m ETL.main
 ```
 
-By default the pipeline writes parquet snapshots to `ETL/outputs/`. Set `TARGET=postgres` to load into a database instead (requires `SUPABASE_DATABASE_URL`).
+By default the pipeline writes parquet snapshots of bronze/silver/gold daily tables to `ETL/outputs/`. Set `TARGET=postgres` to load the data into the Supabase/PostgreSQL schema (`bronze_daily_tracks`, `silver_artist_market_daily`, `gold_artist_global_daily`) instead (requires `SUPABASE_DATABASE_URL`).
