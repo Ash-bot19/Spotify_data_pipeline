@@ -13,7 +13,7 @@ Free daily Spotify Top Artists data pipeline (ETL + dashboard)
    SPOTIFY_CLIENT_SECRET=your_spotify_app_client_secret
    # optional overrides:
    # SPOTIFY_PLAYLIST_IDS=us:37i9dQZEVXbLRQDuF5jeBp,gb:https://open.spotify.com/playlist/37i9dQZEVXbLnolsZ8PSNw@GB
-   # (defaults to us:37i9dQZEVXbLRQDuF5jeBp if unset)
+   # (defaults to in:37i9dQZEVXbLZ52XmnySJg if unset)
    # SUPABASE_DATABASE_URL=postgres_connection_string
    # FILES_OUTPUT_DIR=absolute_or_relative_path_for_parquet_outputs
    ```

@@ -43,15 +43,36 @@ def run() -> Dict[str, object]:
     errors: List[str] = []
 
     for target in playlist_targets:
-        try:
-            playlist = client.fetch_playlist(
-                target.playlist_id, market=target.api_market
-            )
-        except HTTPError as exc:
+        playlist = None
+        last_error: Optional[HTTPError] = None
+        candidate_markets = []
+        if target.api_market:
+            candidate_markets.append(target.api_market)
+        candidate_markets.append(None)
+
+        for api_market in candidate_markets:
+            try:
+                playlist = client.fetch_playlist(
+                    target.playlist_id, market=api_market
+                )
+                if api_market is None and target.api_market:
+                    LOGGER.warning(
+                        "Fetched playlist %s without market override after %s failed.",
+                        target.playlist_id,
+                        target.api_market,
+                    )
+                break
+            except HTTPError as exc:
+                last_error = exc
+                continue
+
+        if playlist is None:
             response_text = ""
-            if exc.response is not None:
+            if last_error and last_error.response is not None:
                 try:
-                    response_text = f" | Spotify response: {exc.response.text}"
+                    response_text = (
+                        f" | Spotify response: {last_error.response.text}"
+                    )
                 except Exception:  # pragma: no cover - defensive
                     response_text = ""
             message = (

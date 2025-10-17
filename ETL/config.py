@@ -88,9 +88,9 @@ def _parse_playlists(raw_value: Optional[str]) -> Tuple[PlaylistTarget, ...]:
     if not raw_value:
         return (
             PlaylistTarget(
-                market="us",
-                playlist_id="37i9dQZEVXbLRQDuF5jeBp",
-                api_market_override="US",
+                market="in",
+                playlist_id="37i9dQZEVXbLZ52XmnySJg",
+                api_market_override="IN",
             ),
         )
 
