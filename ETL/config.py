@@ -41,6 +41,23 @@ class PlaylistTarget:
 
     market: str
     playlist_id: str
+    api_market_override: Optional[str] = None
+
+    @property
+    def dataset_market(self) -> str:
+        """Market label used in downstream tables."""
+        return self.market.upper()
+
+    @property
+    def api_market(self) -> Optional[str]:
+        """Market code used when calling Spotify."""
+        if self.api_market_override:
+            return self.api_market_override.upper()
+
+        if self.market.lower() == "global":
+            return None
+
+        return self.market.upper()
 
 
 @dataclass(frozen=True)
@@ -70,7 +87,11 @@ def _parse_playlists(raw_value: Optional[str]) -> Tuple[PlaylistTarget, ...]:
     """Parse playlist configuration from an environment variable."""
     if not raw_value:
         return (
-            PlaylistTarget(market="global", playlist_id="37i9dQZEVXbMDoHDwVN2tF"),
+            PlaylistTarget(
+                market="us",
+                playlist_id="37i9dQZEVXbLRQDuF5jeBp",
+                api_market_override="US",
+            ),
         )
 
     targets: List[PlaylistTarget] = []
@@ -80,14 +101,17 @@ def _parse_playlists(raw_value: Optional[str]) -> Tuple[PlaylistTarget, ...]:
             raise RuntimeError(
                 "Invalid SPOTIFY_PLAYLIST_IDS entry. Use MARKET:PLAYLIST_ID format."
             )
-        market, playlist_id = [value.strip() for value in part.split(":", 1)]
-        if not market or not playlist_id:
+        market, playlist_entry = [value.strip() for value in part.split(":", 1)]
+        if not market or not playlist_entry:
             raise RuntimeError(
                 "Invalid SPOTIFY_PLAYLIST_IDS entry. Use MARKET:PLAYLIST_ID format."
             )
+        playlist_value, api_override = _split_playlist_entry(playlist_entry)
         targets.append(
             PlaylistTarget(
-                market=market.lower(), playlist_id=_normalise_playlist_id(playlist_id)
+                market=market.lower(),
+                playlist_id=_normalise_playlist_id(playlist_value),
+                api_market_override=api_override,
             )
         )
 
@@ -96,17 +120,36 @@ def _parse_playlists(raw_value: Optional[str]) -> Tuple[PlaylistTarget, ...]:
     return tuple(targets)
 
 
+def _split_playlist_entry(entry: str) -> Tuple[str, Optional[str]]:
+    """Split a playlist entry that may include an API market override (id@market)."""
+    if "@" not in entry:
+        return entry, None
+    playlist_id, api_market = entry.split("@", 1)
+    playlist_id = playlist_id.strip()
+    api_market = api_market.strip()
+    if not playlist_id:
+        raise RuntimeError("Playlist entry is missing the playlist ID before '@'.")
+    if not api_market:
+        raise RuntimeError(
+            "Playlist entry must include a market code after '@' when provided."
+        )
+    return playlist_id, api_market
+
+
 def _normalise_playlist_id(value: str) -> str:
     """Extract the raw playlist ID from various formats (URL, URI, plain)."""
+    value = value.strip()
     if value.startswith("spotify:"):
         parts = value.split(":")
-        return parts[-1]
+        return parts[-1].strip()
 
     if "open.spotify.com" in value:
         # Handle URLs like https://open.spotify.com/playlist/{id}?si=...
-        segment = value.split("open.spotify.com/playlist/", 1)[-1]
+        # and https://open.spotify.com/user/foo/playlist/{id}
+        segment = value.split("playlist/", 1)[-1]
         segment = segment.split("?", 1)[0]
-        return segment.strip("/")
+        segment = segment.split("&", 1)[0]
+        return segment.strip("/").strip()
 
     return value
 

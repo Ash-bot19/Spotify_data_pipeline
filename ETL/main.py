@@ -40,15 +40,29 @@ def run() -> Dict[str, object]:
 
     bronze_frames: List[pd.DataFrame] = []
 
+    errors: List[str] = []
+
     for target in playlist_targets:
         try:
-            playlist = client.fetch_playlist(target.playlist_id)
+            playlist = client.fetch_playlist(
+                target.playlist_id, market=target.api_market
+            )
         except HTTPError as exc:
-            raise RuntimeError(
+            response_text = ""
+            if exc.response is not None:
+                try:
+                    response_text = f" | Spotify response: {exc.response.text}"
+                except Exception:  # pragma: no cover - defensive
+                    response_text = ""
+            message = (
                 f"Failed to fetch playlist '{target.playlist_id}' "
-                f"for market '{target.market}'. "
-                "Verify the playlist ID/URL is public and correct."
-            ) from exc
+                f"for market '{target.market}'. Verify the playlist ID/URL is public, "
+                "available in the requested market, and that the app has access."
+                f"{response_text}"
+            )
+            LOGGER.error(message)
+            errors.append(message)
+            continue
         playlist_name = playlist.get("name") or target.playlist_id
         items = playlist.get("tracks", {}).get("items", [])
         LOGGER.info(
@@ -59,7 +73,7 @@ def run() -> Dict[str, object]:
         )
         bronze_frame = playlist_to_bronze(
             items,
-            market=target.market.upper(),
+            market=target.dataset_market,
             playlist_id=target.playlist_id,
             playlist_name=playlist_name,
             snapshot_date=snapshot_date,
@@ -74,8 +88,11 @@ def run() -> Dict[str, object]:
         bronze_frames.append(bronze_frame)
 
     if not bronze_frames:
-        LOGGER.warning("No playlist data retrieved; aborting run.")
-        return {"status": "empty"}
+        error_message = (
+            "; ".join(errors) if errors else "No playlist data retrieved; aborting run."
+        )
+        LOGGER.error(error_message)
+        raise RuntimeError(error_message)
 
     bronze_df = pd.concat(bronze_frames, ignore_index=True)
     silver_df = bronze_to_silver(bronze_df)

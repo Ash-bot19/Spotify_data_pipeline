@@ -33,9 +33,14 @@ class SpotifyClient:
         self._token: Optional[str] = None
         self._token_expiry: float = 0.0
 
-    def fetch_playlist(self, playlist_id: str) -> Dict[str, Any]:
+    def fetch_playlist(
+        self, playlist_id: str, *, market: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Return playlist metadata and all track items for the given playlist ID."""
-        playlist = self._request("GET", f"{API_BASE_URL}/playlists/{playlist_id}")
+        params = {"market": market} if market else None
+        playlist = self._request(
+            "GET", f"{API_BASE_URL}/playlists/{playlist_id}", params=params
+        )
         tracks = playlist.get("tracks", {}) or {}
         items = tracks.get("items", []) or []
         next_url = tracks.get("next")
